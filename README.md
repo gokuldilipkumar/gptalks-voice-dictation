@@ -84,6 +84,26 @@ discarded, so accidentally brushing the key does nothing.
   apply changes.
 - **Quit**
 
+### Auto-start at login
+
+`main.py` only listens for the hotkey while it's actually running — there's
+no Windows service. To have GPTalks always ready in the tray, add a shortcut
+to the Startup folder (`Win+R` → `shell:startup`) pointing at:
+
+```
+Target:    C:\Windows\System32\wscript.exe
+Arguments: "C:\path\to\GPTalks\run_silent.vbs" //B
+```
+
+`run_silent.vbs` launches `.venv\Scripts\pythonw.exe main.py` with a fully
+hidden window. A plain shortcut straight to `pythonw.exe` isn't reliable here:
+in a venv, `pythonw.exe` is a small trampoline that re-execs the *console*
+`python.exe` from the base interpreter, so double-clicking it (or launching it
+via Explorer/Startup with no parent console) can still flash a console window.
+`WScript.Shell.Run(..., 0, False)` forces a hidden window regardless of the
+target's subsystem, sidestepping that. The script resolves its own directory
+at runtime, so it works from any checkout location.
+
 ## Configuration
 
 GPTalks looks for `config.yaml` first in the current working directory, then
