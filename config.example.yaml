@@ -1,0 +1,79 @@
+# GPTalks configuration
+#
+# Copy this file to `config.yaml` (same folder as main.py, or your working
+# directory) and edit. Every key is optional — anything omitted falls back to
+# the defaults shown here.
+
+hotkey:
+  # Key that triggers dictation. Uses the `keyboard` library's key names,
+  # e.g. "right ctrl", "right shift", "f9", "caps lock", "scroll lock".
+  key: right ctrl
+  # "hold"   — push-to-talk: record while the key is held, stop on release.
+  # "toggle" — tap once to start recording, tap again to stop.
+  mode: hold
+
+whisper:
+  # Model size. "base.en" is the fast default; "small.en" is the supported
+  # quality-up option (noticeably better accuracy, ~2-3x slower on CPU).
+  # Avoid medium/large on CPU-only machines.
+  model: base.en
+  # Language code ("en", "de", ...) or "auto". Ignored for *.en models,
+  # which are English-only.
+  language: en
+  # Keep "cpu" unless you have a supported NVIDIA GPU.
+  device: cpu
+  # "int8" is the fastest CPU quantization with near-identical accuracy.
+  compute_type: int8
+  # CPU threads used for inference.
+  cpu_threads: 8
+
+audio:
+  # Whisper's native sample rate; leave at 16000.
+  sample_rate: 16000
+  # Recordings shorter than this are discarded as accidental hotkey taps.
+  min_duration_sec: 0.3
+  # Recordings quieter than this RMS level (samples are in -1..1) are
+  # discarded as silence. Raise it if background noise triggers transcription;
+  # lower it if quiet speech gets dropped.
+  silence_rms_threshold: 0.005
+
+feedback:
+  # Short beep on record start (high pitch) and stop (lower pitch).
+  beeps: true
+
+injection:
+  # "clipboard" — copy + Ctrl+V + restore clipboard (recommended, full Unicode).
+  # "type"      — simulate individual keystrokes (slower; use if paste
+  #               misbehaves in your apps).
+  method: clipboard
+  # Restore whatever was on the clipboard before the paste.
+  restore_clipboard: true
+  # Seconds to wait after Ctrl+V before restoring the clipboard. Increase if
+  # slow apps occasionally paste your *old* clipboard contents.
+  paste_settle_sec: 0.3
+
+cleanup:
+  # Master switch for the tidy-up pass (also toggleable live from the tray
+  # menu). When off, the raw Whisper transcript is pasted verbatim.
+  enabled: true
+  # Removed wherever they appear as a standalone word.
+  filler_words:
+    - um
+    - uh
+    - er
+    - ah
+    - hmm
+    - mhm
+  # Removed only when set off by commas ("it was, like, huge"), because they
+  # are often legitimate words ("I like pizza" is never touched).
+  cautious_filler_words:
+    - like
+    - you know
+    - i mean
+  # Individual rules; each can be turned off independently.
+  rules:
+    strip_fillers: true            # remove the words listed above
+    collapse_repeats: true         # "the the" -> "the" (stutters/false starts)
+    trim_whitespace: true          # collapse runs of spaces, strip ends
+    capitalize_first: true         # capitalize the first letter
+    ensure_end_punctuation: true   # append "." if the text ends mid-word
